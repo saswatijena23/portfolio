@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ============================================================
+       DOCUMENT METADATA
+       ============================================================ -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Maya Chen — Frontend Developer &amp; Accessibility Engineer</title>
+  <meta name="description" content="Maya Chen is a frontend developer and accessibility engineer building fast, semantic, WCAG-compliant web experiences. Explore her work, skills, and projects.">
+  <meta name="keywords" content="frontend developer, accessibility engineer, web accessibility, WCAG, semantic HTML, portfolio, Maya Chen">
+  <meta name="author" content="Maya Chen">
+
+  <!-- Canonical URL placeholder — replace with production domain before deploying -->
+  <link rel="canonical" href="https://www.mayachen.dev/index.html">
+
+  <!-- Open Graph tags for social sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Maya Chen — Frontend Developer & Accessibility Engineer">
+  <meta property="og:description" content="Frontend developer and accessibility engineer building fast, semantic, WCAG-compliant web experiences.">
+  <meta property="og:image" content="https://www.mayachen.dev/images/og-cover.jpg">
+  <meta property="og:url" content="https://www.mayachen.dev/index.html">
+  <meta property="og:site_name" content="Maya Chen — Portfolio">
+
+  <!-- Twitter Card tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Maya Chen — Frontend Developer & Accessibility Engineer">
+  <meta name="twitter:description" content="Frontend developer and accessibility engineer building fast, semantic, WCAG-compliant web experiences.">
+  <meta name="twitter:image" content="https://www.mayachen.dev/images/og-cover.jpg">
+
+  <!-- Favicon placeholder -->
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+
+  <!-- Preconnect to Google Fonts for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       SKIP LINK
+       Allows keyboard and screen-reader users to bypass the
+       repeated navigation block and jump straight to main content.
+       Visually hidden until it receives keyboard focus.
+       ============================================================ -->
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <!-- ============================================================
+       HEADER + PRIMARY NAVIGATION
+       Identical markup is repeated on every page so screen-reader
+       users build a predictable mental model of the site.
+       aria-current="page" tells assistive tech which link matches
+       the page currently loaded, without relying on color alone.
+       ============================================================ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo" aria-label="Maya Chen — Home">
+        <span class="logo-mark" aria-hidden="true">MC</span>
+        <span class="logo-text">Maya Chen</span>
+      </a>
+
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="primary-nav">
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="nav-toggle-bar" aria-hidden="true"></span>
+        <span class="visually-hidden">Menu</span>
+      </button>
+
+      <nav aria-label="Primary Navigation" id="primary-nav" class="primary-nav">
+        <ul>
+          <li><a href="index.html" aria-current="page">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       Exactly one <main> per page; this is the skip link's target.
+       ============================================================ -->
+  <main id="main-content">
+
+    <!-- HERO — signature "annotated blueprint" treatment: a ruled,
+         coordinate-labeled panel that echoes the site's focus on
+         structure and semantics. Ruler ticks are purely decorative
+         (aria-hidden) so they never clutter screen-reader output. -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-ruler" aria-hidden="true">
+        <span>00</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span>
+      </div>
+      <div class="hero-content">
+        <p class="eyebrow">
+          <span class="eyebrow-tag">&lt;role&gt;</span> Frontend Developer · Accessibility Engineer <span class="eyebrow-tag">&lt;/role&gt;</span>
+        </p>
+        <h1 id="hero-heading">I build interfaces that work for every hand, eye, and screen.</h1>
+        <p class="hero-lede">
+          I'm Maya — a frontend developer who treats accessibility and performance as
+          design constraints, not afterthoughts. I turn dense requirements into
+          markup that's fast, semantic, and genuinely usable by everyone.
+        </p>
+        <div class="cta-group">
+          <a class="button button-primary" href="projects.html">View my projects</a>
+          <a class="button button-secondary" href="contact.html">Start a conversation</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILLS SECTION -->
+    <section class="skills" aria-labelledby="skills-heading">
+      <div class="section-inner">
+        <p class="eyebrow">What I work with</p>
+        <h2 id="skills-heading">Core skills</h2>
+        <ul class="skills-grid">
+          <li class="skill-card">
+            <h3>Semantic HTML5</h3>
+            <p>Markup structured around meaning first, so it holds up in any browser, device, or assistive technology.</p>
+          </li>
+          <li class="skill-card">
+            <h3>Modern CSS</h3>
+            <p>Grid, Flexbox, and custom properties used to build responsive layouts without fighting the cascade.</p>
+          </li>
+          <li class="skill-card">
+            <h3>Vanilla JavaScript</h3>
+            <p>Lightweight, dependency-free interactivity that degrades gracefully when scripts fail to load.</p>
+          </li>
+          <li class="skill-card">
+            <h3>WCAG 2.2 AA Auditing</h3>
+            <p>Manual and automated accessibility testing across keyboard, screen reader, and contrast requirements.</p>
+          </li>
+          <li class="skill-card">
+            <h3>Performance Tuning</h3>
+            <p>Asset optimization, critical rendering path awareness, and Lighthouse-driven iteration.</p>
+          </li>
+          <li class="skill-card">
+            <h3>Design Systems</h3>
+            <p>Token-based component libraries that keep visual language consistent across a growing product.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- FEATURED PROJECTS PREVIEW -->
+    <section class="featured-projects" aria-labelledby="featured-heading">
+      <div class="section-inner">
+        <div class="section-heading-row">
+          <div>
+            <p class="eyebrow">Selected work</p>
+            <h2 id="featured-heading">Featured projects</h2>
+          </div>
+          <a class="text-link" href="projects.html">See all projects</a>
+        </div>
+
+        <div class="featured-grid">
+          <article class="featured-card">
+            <img src="images/project-dashboard.jpg" alt="Analytics dashboard interface showing bar charts and a keyboard-focus outline around a filter control" width="640" height="420" loading="lazy">
+            <div class="featured-card-body">
+              <h3>Accessible Analytics Dashboard</h3>
+              <p>A data-dense dashboard rebuilt for full keyboard operability and screen-reader chart summaries.</p>
+              <a class="text-link" href="projects.html">Read the case study</a>
+            </div>
+          </article>
+
+          <article class="featured-card">
+            <img src="images/project-marketplace.jpg" alt="Grid of product cards in an online marketplace with visible focus ring on the first card" width="640" height="420" loading="lazy">
+            <div class="featured-card-body">
+              <h3>Inclusive Marketplace UI</h3>
+              <p>A component library for an e-commerce platform, audited against WCAG 2.2 AA before launch.</p>
+              <a class="text-link" href="projects.html">Read the case study</a>
+            </div>
+          </article>
+
+          <article class="featured-card">
+            <img src="images/project-learning.jpg" alt="Online course player interface with captions enabled and a transcript panel open" width="640" height="420" loading="lazy">
+            <div class="featured-card-body">
+              <h3>Learning Platform Redesign</h3>
+              <p>A course player rebuilt with captions, transcripts, and reduced-motion support by default.</p>
+              <a class="text-link" href="projects.html">Read the case study</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLOSING CALL TO ACTION -->
+    <section class="cta-band" aria-labelledby="cta-heading">
+      <div class="section-inner cta-band-inner">
+        <h2 id="cta-heading">Have a project that needs to work for everyone?</h2>
+        <p>I'm currently open to freelance and contract frontend work.</p>
+        <a class="button button-primary" href="contact.html">Get in touch</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       Repeated on every page. Social links use descriptive
+       aria-label text rather than relying on icon shape alone.
+       ============================================================ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>&copy; <span id="current-year">2026</span> Maya Chen. All rights reserved.</p>
+      <ul class="social-links">
+        <li>
+          <a href="https://github.com/mayachen-dev" aria-label="Maya Chen on GitHub (opens in a new tab)" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </li>
+        <li>
+          <a href="https://linkedin.com/in/mayachen-dev" aria-label="Maya Chen on LinkedIn (opens in a new tab)" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </li>
+        <li>
+          <a href="mailto:hello@mayachen.dev" aria-label="Email Maya Chen at hello@mayachen.dev">Email</a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Back-to-top button is injected/managed by script.js; markup lives here
+       so it exists in the DOM before scripts run, with a safe no-JS fallback state. -->
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
