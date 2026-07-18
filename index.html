@@ -188,6 +188,107 @@
       </div>
     </section>
 
+    <!-- ============================================================
+         TASK MANAGER — "My Task Manager" interactive demo.
+         All task <li> elements are created dynamically by script.js;
+         the <ul> below stays empty in markup on purpose (see the
+         #task-empty-state paragraph for the no-tasks case).
+         ============================================================ -->
+    <section class="task-manager" aria-labelledby="task-manager-heading">
+      <div class="section-inner">
+        <p class="eyebrow">Interactive demo</p>
+        <h2 id="task-manager-heading">My Task Manager</h2>
+        <p class="task-manager-lede">
+          A small client-side to-do app — add, edit, filter, search, and sort
+          tasks. Everything here is saved to your browser's local storage, so
+          your list is still here next time you visit.
+        </p>
+
+        <div class="task-app">
+
+          <!-- ADD TASK -->
+          <form class="task-form" id="task-form" aria-labelledby="task-form-heading" novalidate>
+            <h3 id="task-form-heading" class="visually-hidden">Add a new task</h3>
+            <div class="task-form-row">
+              <label for="task-input" class="visually-hidden">Task description</label>
+              <input
+                type="text"
+                id="task-input"
+                name="task-input"
+                placeholder="Add a new task…"
+                autocomplete="off"
+                aria-describedby="task-input-error">
+              <button type="submit" class="button button-primary" aria-label="Add Task">Add Task</button>
+            </div>
+            <!-- Live-region validation message: empty / whitespace-only / duplicate submissions -->
+            <span class="field-error" id="task-input-error" role="alert"></span>
+          </form>
+
+          <!-- SEARCH + SORT -->
+          <div class="task-toolbar">
+            <div class="task-search">
+              <label for="task-search-input" class="visually-hidden">Search tasks</label>
+              <input
+                type="search"
+                id="task-search-input"
+                name="task-search"
+                placeholder="Search tasks…"
+                autocomplete="off">
+            </div>
+
+            <div class="task-sort">
+              <label for="task-sort-select">Sort by</label>
+              <select id="task-sort-select" name="task-sort">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="alphabetical">Alphabetical</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- FILTERS -->
+          <div class="task-filters" role="group" aria-label="Filter tasks">
+            <button type="button" class="task-filter-btn" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="task-filter-btn" data-filter="active" aria-pressed="false">Active</button>
+            <button type="button" class="task-filter-btn" data-filter="completed" aria-pressed="false">Completed</button>
+          </div>
+
+          <!-- STATISTICS — announced politely so screen-reader users hear
+               counts update after add/complete/delete, without interrupting
+               whatever they're doing (e.g. typing in the search box). -->
+          <dl class="task-stats" id="task-stats" aria-live="polite" aria-atomic="true">
+            <div class="task-stat">
+              <dt>Total</dt>
+              <dd id="stat-total">0</dd>
+            </div>
+            <div class="task-stat">
+              <dt>Completed</dt>
+              <dd id="stat-completed">0</dd>
+            </div>
+            <div class="task-stat">
+              <dt>Remaining</dt>
+              <dd id="stat-remaining">0</dd>
+            </div>
+          </dl>
+
+          <!-- TASK LIST — populated entirely by script.js via createElement(),
+               never hardcoded. Bulk actions live in the same toolbar so they're
+               always adjacent to the list they act on. -->
+          <div class="task-list-header">
+            <h3 class="visually-hidden">Your tasks</h3>
+            <button type="button" class="text-link" id="clear-completed-btn">Clear completed</button>
+          </div>
+
+          <ul class="task-list" id="task-list" aria-label="Task list"></ul>
+
+          <p class="task-empty-state" id="task-empty-state" hidden>
+            No tasks yet — add one above to get started.
+          </p>
+
+        </div>
+      </div>
+    </section>
+
     <!-- CLOSING CALL TO ACTION -->
     <section class="cta-band" aria-labelledby="cta-heading">
       <div class="section-inner cta-band-inner">

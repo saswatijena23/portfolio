@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSkipLinkFocus();
   initContactForm();
   initBackToTop();
+  initTaskManager();
 });
 
 /* --------------------------------------------------------------------------
@@ -250,4 +251,393 @@ function initBackToTop() {
     document.body.focus({ preventScroll: true });
     document.body.addEventListener("blur", () => document.body.removeAttribute("tabindex"), { once: true });
   });
+}
+
+/* ==========================================================================
+   TASK MANAGER — "My Task Manager" section on the Home page
+   ==========================================================================
+   Self-contained CRUD to-do app: state lives in one array, localStorage
+   persists it, and the DOM is always re-rendered from that state rather
+   than hand-edited in place. All row-level interactions (complete, edit,
+   delete) use event delegation on the single <ul>, so no listeners are
+   attached per-task.
+   ========================================================================== */
+
+const TASKS_STORAGE_KEY = "maya-chen-portfolio-tasks";
+
+function initTaskManager() {
+  const form = document.getElementById("task-form");
+  const list = document.getElementById("task-list");
+  if (!form || !list) return; // Section only exists on the Home page.
+
+  const input = document.getElementById("task-input");
+  const inputError = document.getElementById("task-input-error");
+  const searchInput = document.getElementById("task-search-input");
+  const sortSelect = document.getElementById("task-sort-select");
+  const filterButtons = document.querySelectorAll(".task-filter-btn");
+  const clearCompletedBtn = document.getElementById("clear-completed-btn");
+  const emptyState = document.getElementById("task-empty-state");
+  const statTotal = document.getElementById("stat-total");
+  const statCompleted = document.getElementById("stat-completed");
+  const statRemaining = document.getElementById("stat-remaining");
+
+  /* ---- State ---- */
+  let tasks = loadTasks();
+  let currentFilter = "all";       // "all" | "active" | "completed"
+  let currentSort = "newest";      // "newest" | "oldest" | "alphabetical"
+  let currentSearch = "";
+  let editingTaskId = null;        // id of the task currently in edit mode
+
+  /* ------------------------------------------------------------------
+     LOCAL STORAGE
+     ------------------------------------------------------------------ */
+  function loadTasks() {
+    try {
+      const raw = localStorage.getItem(TASKS_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      // Corrupted or inaccessible storage — start from an empty list
+      // rather than letting the whole page fail to load.
+      return [];
+    }
+  }
+
+  function saveTasks() {
+    try {
+      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+    } catch (error) {
+      // Storage full or unavailable (e.g. private browsing) — the app
+      // still works for the current session, it just won't persist.
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     CREATE
+     ------------------------------------------------------------------ */
+  function addTask(rawText) {
+    const text = rawText.trim();
+
+    if (!text) {
+      showInputError("Enter a task before adding it.");
+      return;
+    }
+
+    const isDuplicateActive = tasks.some(
+      (task) => !task.completed && task.text.toLowerCase() === text.toLowerCase()
+    );
+    if (isDuplicateActive) {
+      showInputError("That task is already on your list.");
+      return;
+    }
+
+    const newTask = {
+      id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      text,
+      completed: false,
+      createdAt: Date.now(),
+    };
+
+    tasks.push(newTask);
+    clearInputError();
+    input.value = "";
+    persistAndRender();
+  }
+
+  function showInputError(message) {
+    inputError.textContent = message;
+    input.classList.add("has-error");
+  }
+
+  function clearInputError() {
+    inputError.textContent = "";
+    input.classList.remove("has-error");
+  }
+
+  /* ------------------------------------------------------------------
+     UPDATE
+     ------------------------------------------------------------------ */
+  function toggleTaskCompleted(id) {
+    const task = tasks.find((t) => t.id === id);
+    if (task) task.completed = !task.completed;
+    persistAndRender();
+  }
+
+  function updateTaskText(id, rawText) {
+    const text = rawText.trim();
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+
+    // An edit that's emptied out is treated as "cancel", not "delete" —
+    // the original text is kept rather than silently losing the task.
+    if (text) {
+      task.text = text;
+    }
+    editingTaskId = null;
+    persistAndRender();
+  }
+
+  function cancelEditing() {
+    editingTaskId = null;
+    renderTasks();
+  }
+
+  /* ------------------------------------------------------------------
+     DELETE
+     ------------------------------------------------------------------ */
+  function deleteTask(id) {
+    tasks = tasks.filter((t) => t.id !== id);
+    persistAndRender();
+  }
+
+  function clearCompletedTasks() {
+    tasks = tasks.filter((t) => !t.completed);
+    persistAndRender();
+  }
+
+  /* ------------------------------------------------------------------
+     READ / DERIVE — filtering, search, sort are all computed from state
+     at render time rather than mutating the stored task list.
+     ------------------------------------------------------------------ */
+  function getVisibleTasks() {
+    let result = tasks;
+
+    if (currentFilter === "active") {
+      result = result.filter((t) => !t.completed);
+    } else if (currentFilter === "completed") {
+      result = result.filter((t) => t.completed);
+    }
+
+    if (currentSearch) {
+      const query = currentSearch.toLowerCase();
+      result = result.filter((t) => t.text.toLowerCase().includes(query));
+    }
+
+    result = [...result].sort((a, b) => {
+      if (currentSort === "newest") return b.createdAt - a.createdAt;
+      if (currentSort === "oldest") return a.createdAt - b.createdAt;
+      if (currentSort === "alphabetical") return a.text.localeCompare(b.text);
+      return 0;
+    });
+
+    return result;
+  }
+
+  /* ------------------------------------------------------------------
+     RENDER — the DOM is fully rebuilt from state on every change using
+     createElement()/append(), never innerHTML string-building, so task
+     text is always safely escaped by the DOM API rather than concatenated
+     into markup.
+     ------------------------------------------------------------------ */
+  function renderTasks() {
+    const visibleTasks = getVisibleTasks();
+
+    const fragment = document.createDocumentFragment();
+    visibleTasks.forEach((task) => {
+      fragment.appendChild(
+        task.id === editingTaskId ? buildEditingTaskElement(task) : buildTaskElement(task)
+      );
+    });
+
+    list.replaceChildren(fragment);
+
+    const hasAnyTasks = tasks.length > 0;
+    const hasVisibleTasks = visibleTasks.length > 0;
+    emptyState.textContent = !hasAnyTasks
+      ? "No tasks yet — add one above to get started."
+      : "No tasks match the current filter or search.";
+    emptyState.hidden = hasVisibleTasks;
+
+    renderStats();
+  }
+
+  function buildTaskElement(task) {
+    const item = document.createElement("li");
+    item.className = "task-item" + (task.completed ? " is-completed" : "");
+    item.dataset.taskId = task.id;
+
+    // Checkbox
+    const checkboxWrapper = document.createElement("span");
+    checkboxWrapper.className = "task-item-checkbox";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = task.completed;
+    checkbox.id = `checkbox-${task.id}`;
+    checkbox.dataset.action = "toggle";
+    checkboxWrapper.appendChild(checkbox);
+
+    // Label (also the visible task text)
+    const label = document.createElement("label");
+    label.className = "task-item-text";
+    label.setAttribute("for", `checkbox-${task.id}`);
+    label.textContent = task.text;
+
+    // Date
+    const date = document.createElement("span");
+    date.className = "task-item-date";
+    date.textContent = formatTaskDate(task.createdAt);
+
+    // Actions
+    const actions = document.createElement("div");
+    actions.className = "task-item-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "task-item-action-btn task-edit-btn";
+    editBtn.dataset.action = "edit";
+    editBtn.setAttribute("aria-label", `Edit task: ${task.text}`);
+    editBtn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"></path></svg>';
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "task-item-action-btn task-delete-btn";
+    deleteBtn.dataset.action = "delete";
+    deleteBtn.setAttribute("aria-label", `Delete task: ${task.text}`);
+    deleteBtn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>';
+
+    actions.append(editBtn, deleteBtn);
+    item.append(checkboxWrapper, label, date, actions);
+    return item;
+  }
+
+  function buildEditingTaskElement(task) {
+    const item = document.createElement("li");
+    item.className = "task-item";
+    item.dataset.taskId = task.id;
+
+    const editInput = document.createElement("input");
+    editInput.type = "text";
+    editInput.className = "task-item-edit-input";
+    editInput.value = task.text;
+    editInput.setAttribute("aria-label", `Editing task: ${task.text}`);
+    editInput.dataset.action = "edit-input";
+
+    item.appendChild(editInput);
+    // Focus is set after the element lands in the DOM.
+    queueMicrotask(() => editInput.focus());
+    return item;
+  }
+
+  function formatTaskDate(timestamp) {
+    return new Date(timestamp).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function renderStats() {
+    const total = tasks.length;
+    const completed = tasks.filter((t) => t.completed).length;
+    statTotal.textContent = String(total);
+    statCompleted.textContent = String(completed);
+    statRemaining.textContent = String(total - completed);
+  }
+
+  function persistAndRender() {
+    saveTasks();
+    renderTasks();
+  }
+
+  /* ------------------------------------------------------------------
+     EVENT HANDLING
+     ------------------------------------------------------------------ */
+
+  // Create — form submit covers both button click and Enter key natively.
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    addTask(input.value);
+  });
+
+  input.addEventListener("input", () => {
+    if (inputError.textContent) clearInputError();
+  });
+
+  // Event delegation: one listener on the list handles toggle/edit/delete
+  // for every task, current and future, instead of per-item listeners.
+  list.addEventListener("click", (event) => {
+    const actionEl = event.target.closest("[data-action]");
+    if (!actionEl) return;
+    const taskItem = event.target.closest(".task-item");
+    const taskId = taskItem && taskItem.dataset.taskId;
+    if (!taskId) return;
+
+    const action = actionEl.dataset.action;
+    if (action === "toggle") {
+      toggleTaskCompleted(taskId);
+    } else if (action === "edit") {
+      editingTaskId = taskId;
+      renderTasks();
+    } else if (action === "delete") {
+      deleteTask(taskId);
+    }
+  });
+
+  // Checkbox "change" also needs delegation (click alone won't fire for
+  // keyboard-toggled checkboxes reliably across all browsers).
+  list.addEventListener("change", (event) => {
+    if (event.target.matches('input[type="checkbox"][data-action="toggle"]')) {
+      const taskItem = event.target.closest(".task-item");
+      if (taskItem) toggleTaskCompleted(taskItem.dataset.taskId);
+    }
+  });
+
+  // Edit-mode keyboard handling: Enter commits, Escape cancels.
+  list.addEventListener("keydown", (event) => {
+    if (!event.target.matches('[data-action="edit-input"]')) return;
+    const taskItem = event.target.closest(".task-item");
+    const taskId = taskItem && taskItem.dataset.taskId;
+    if (!taskId) return;
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      updateTaskText(taskId, event.target.value);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      cancelEditing();
+    }
+  });
+
+  // Committing an edit on blur too, so clicking away doesn't discard it.
+  list.addEventListener(
+    "blur",
+    (event) => {
+      if (!event.target.matches('[data-action="edit-input"]')) return;
+      const taskItem = event.target.closest(".task-item");
+      const taskId = taskItem && taskItem.dataset.taskId;
+      if (taskId && taskId === editingTaskId) {
+        updateTaskText(taskId, event.target.value);
+      }
+    },
+    true // capture phase, since "blur" doesn't bubble
+  );
+
+  // Filters
+  filterButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentFilter = btn.dataset.filter;
+      filterButtons.forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      renderTasks();
+    });
+  });
+
+  // Live search
+  searchInput.addEventListener("input", (event) => {
+    currentSearch = event.target.value.trim();
+    renderTasks();
+  });
+
+  // Sort
+  sortSelect.addEventListener("change", (event) => {
+    currentSort = event.target.value;
+    renderTasks();
+  });
+
+  // Bulk delete
+  clearCompletedBtn.addEventListener("click", clearCompletedTasks);
+
+  // Initial paint from whatever was loaded out of localStorage.
+  renderTasks();
 }

@@ -32,6 +32,7 @@
    14. Utilities
    15. Animations
    16. Media Queries (breakpoint reference + cross-cutting overrides)
+   17. Task Manager
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -1295,4 +1296,351 @@ textarea:focus-visible {
 .back-to-top:hover {
   background-color: var(--color-teal-dark);
   transform: translateY(-3px);
+}
+
+/* ==========================================================================
+   17. TASK MANAGER — "My Task Manager" section on the Home page
+   ==========================================================================
+   Reuses existing tokens (--color-*, --space-*, --radius-*, --shadow-*,
+   --transition-*) so light/dark theme switching and reduced-motion
+   handling already defined above apply here automatically — no new
+   theme logic needed.
+   ========================================================================== */
+
+.task-manager {
+  padding-block: var(--space-6);
+  background-color: var(--color-surface);
+  border-block: var(--border-width) solid var(--color-rule);
+  transition: var(--transition-theme);
+}
+
+.task-manager-lede {
+  font-size: var(--fs-lg);
+  max-width: 60ch;
+}
+
+.task-app {
+  margin-top: var(--space-4);
+  background-color: var(--color-bg);
+  border: var(--border-width) solid var(--color-rule);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-theme);
+}
+
+/* ---- Add-task form ---- */
+.task-form {
+  margin-bottom: var(--space-3);
+}
+
+.task-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.task-form-row input {
+  flex: 1 1 14rem;
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.9rem;
+  min-height: 2.75rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.task-form-row input:hover {
+  border-color: var(--color-slate);
+}
+
+.task-form-row input:focus {
+  border-color: var(--color-teal);
+  box-shadow: var(--shadow-focus);
+}
+
+.task-form-row input.has-error {
+  border-color: var(--color-error);
+}
+
+/* Reuses the .field-error pattern already defined for the contact form:
+   reserved height, mono type, live-region announced via role="alert"
+   in the markup — so no layout jump when a message appears/clears. */
+.task-manager .field-error {
+  display: block;
+  min-height: 1.25em;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-error);
+  margin-top: var(--space-1);
+}
+
+/* ---- Search + sort toolbar ---- */
+.task-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.task-search input,
+.task-sort select {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  min-height: 2.5rem;
+}
+
+.task-search input {
+  min-width: 12rem;
+}
+
+.task-sort {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--color-slate);
+}
+
+/* ---- Filter buttons (toggle-button pattern via aria-pressed) ---- */
+.task-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.task-filter-btn {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--color-slate);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 1.1rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.task-filter-btn:hover {
+  border-color: var(--color-teal);
+  color: var(--color-teal-dark);
+}
+
+/* The pressed/active filter is marked via aria-pressed, so styling and
+   the accessible state are driven by the same attribute — never color
+   alone: weight and border also change. */
+.task-filter-btn[aria-pressed="true"] {
+  background-color: var(--color-teal);
+  border-color: var(--color-teal);
+  color: #FFFFFF;
+}
+
+/* ---- Statistics ---- */
+.task-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+
+.task-stat {
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-rule);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  text-align: center;
+}
+
+.task-stat dt {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-slate-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 var(--space-1);
+}
+
+.task-stat dd {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+/* ---- Task list header (bulk action) ---- */
+.task-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: var(--space-2);
+}
+
+/* ---- Task list ---- */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-rule);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  transition: box-shadow var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
+}
+
+.task-item:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+  border-color: var(--color-teal);
+}
+
+.task-item.is-completed {
+  opacity: 0.7;
+}
+
+.task-item.is-completed .task-item-text {
+  text-decoration: line-through;
+  color: var(--color-slate-muted);
+}
+
+/* Custom checkbox: a real <input type="checkbox"> underneath (for native
+   keyboard/screen-reader behavior) with the visual box drawn via a
+   sibling element, so appearance can be fully styled without losing
+   accessibility semantics. */
+.task-item-checkbox {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.task-item-checkbox input[type="checkbox"] {
+  width: 1.4rem;
+  height: 1.4rem;
+  margin: 0;
+  accent-color: var(--color-teal);
+  cursor: pointer;
+}
+
+.task-item-text {
+  flex: 1 1 auto;
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  color: var(--color-ink);
+  word-break: break-word;
+}
+
+/* Inline edit mode: the text is swapped for a text input in place,
+   rather than opening a modal, so editing stays lightweight. */
+.task-item-edit-input {
+  flex: 1 1 auto;
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  color: var(--color-ink);
+  background-color: var(--color-bg);
+  border: var(--border-width) solid var(--color-teal);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+}
+
+.task-item-date {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--color-slate-muted);
+  white-space: nowrap;
+}
+
+.task-item-actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.task-item-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  border: var(--border-width) solid transparent;
+  background: transparent;
+  color: var(--color-slate);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.task-item-action-btn:hover {
+  background-color: var(--color-bg-alt);
+  border-color: var(--color-rule);
+  color: var(--color-teal-dark);
+}
+
+.task-item-action-btn.task-delete-btn:hover {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.task-item-action-btn svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  pointer-events: none;
+}
+
+/* ---- Empty state ---- */
+.task-empty-state {
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--color-slate-muted);
+  padding: var(--space-4);
+  margin: 0;
+}
+
+/* ---- Responsive: stack toolbar + tighten task rows on narrow screens ---- */
+@media (max-width: 479.98px) {
+  .task-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .task-search input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .task-item {
+    flex-wrap: wrap;
+  }
+
+  .task-item-date {
+    order: 3;
+    margin-left: calc(1.4rem + var(--space-3));
+  }
+}
+
+/* ---- Reduced motion: covered by the existing global rule above, but
+   listed explicitly here for clarity on what it affects in this section ---- */
+@media (prefers-reduced-motion: reduce) {
+  .task-item:hover {
+    transform: none;
+  }
 }
